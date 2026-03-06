@@ -11,8 +11,8 @@ and returns it as clean, structured JSON.  No API key required.
 
 ```bash
 # Pull and run the latest image from GitHub Container Registry
-docker pull ghcr.io/eladlevi/finance-api:main
-docker run -p 8000:8000 ghcr.io/eladlevi/finance-api:main
+docker pull ghcr.io/JakePeralta7/finance-api:main
+docker run -p 8000:8000 ghcr.io/JakePeralta7/finance-api:main
 ```
 
 Or build locally:
@@ -141,10 +141,10 @@ The image is built and published to GitHub Container Registry on every push to
 
 ```bash
 # Latest from main branch
-docker pull ghcr.io/eladlevi/finance-api:main
+docker pull ghcr.io/JakePeralta7/finance-api:main
 
 # Specific release
-docker pull ghcr.io/eladlevi/finance-api:1.0.0
+docker pull ghcr.io/JakePeralta7/finance-api:1.0.0
 ```
 
 Images are built for **linux/amd64** and **linux/arm64** (Apple Silicon / AWS Graviton).
@@ -167,22 +167,3 @@ Finance-API/
 ├── requirements.txt
 └── .gitignore
 ```
-
----
-
-## Disclaimer
-
-This project uses Yahoo Finance's **unofficial internal API**. It is intended
-for personal and educational use only.  Yahoo Finance data is subject to
-[Yahoo's Terms of Service](https://legal.yahoo.com/us/en/yahoo/terms/otos/index.html).
-For production or commercial use, consider a licensed data provider such as
-[Polygon.io](https://polygon.io), [Alpha Vantage](https://www.alphavantage.co),
-or [Tiingo](https://www.tiingo.com).
-
----
-
-## License
-
-MIT © 2026 Elad Levi
-
-
