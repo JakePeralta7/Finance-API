@@ -1,0 +1,12 @@
+services:
+  finance-api:
+    image: ghcr.io/jakeperalta7/finance-api:latest
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
