@@ -3,7 +3,7 @@
 A containerised REST API proxy that retrieves financial data from Yahoo Finance
 and returns it as clean, structured JSON.  No API key required.
 
-[![Build](https://github.com/eladlevi/Finance-API/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/eladlevi/Finance-API/actions/workflows/docker-publish.yml)
+[![Build and Push Docker Image](https://github.com/JakePeralta7/Finance-API/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/JakePeralta7/Finance-API/actions/workflows/docker-publish.yml)
 
 ---
 
