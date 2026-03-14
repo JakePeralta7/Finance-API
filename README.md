@@ -11,8 +11,8 @@ and returns it as clean, structured JSON.  No API key required.
 
 ```bash
 # Pull and run the latest image from GitHub Container Registry
-docker pull ghcr.io/JakePeralta7/finance-api:main
-docker run -p 8000:8000 ghcr.io/JakePeralta7/finance-api:main
+docker pull ghcr.io/JakePeralta7/finance-api:latest
+docker run -p 8000:8000 ghcr.io/JakePeralta7/finance-api:latest
 ```
 
 Or build locally:
@@ -131,23 +131,6 @@ docker run -p 8000:8000 \
   -e CORS_ORIGINS="https://myapp.example.com" \
   ghcr.io/eladlevi/finance-api:main
 ```
-
----
-
-## Docker Image
-
-The image is built and published to GitHub Container Registry on every push to
-`main` and on version tags (`v*.*.*`).
-
-```bash
-# Latest from main branch
-docker pull ghcr.io/JakePeralta7/finance-api:main
-
-# Specific release
-docker pull ghcr.io/JakePeralta7/finance-api:1.0.0
-```
-
-Images are built for **linux/amd64** and **linux/arm64** (Apple Silicon / AWS Graviton).
 
 ---
 
