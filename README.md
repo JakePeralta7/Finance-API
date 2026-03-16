@@ -131,22 +131,3 @@ docker run -p 8000:8000 \
   -e CORS_ORIGINS="https://myapp.example.com" \
   ghcr.io/eladlevi/finance-api:main
 ```
-
----
-
-## Project Structure
-
-```
-Finance-API/
-├── .github/workflows/docker-publish.yml   # CI/CD → ghcr.io
-├── app/
-│   ├── main.py                            # FastAPI application
-│   ├── routers/stock.py                   # GET /stock/{symbol}, GET /health
-│   ├── services/
-│   │   ├── yahoo_session.py               # curl_cffi session + auth lifecycle
-│   │   └── yahoo_client.py                # Yahoo API calls + response normalisation
-│   └── models/responses.py                # Pydantic response models
-├── Dockerfile
-├── requirements.txt
-└── .gitignore
-```
