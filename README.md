@@ -129,5 +129,5 @@ All configuration is done through environment variables:
 docker run -p 8000:8000 \
   -e LOG_LEVEL=DEBUG \
   -e CORS_ORIGINS="https://myapp.example.com" \
-  ghcr.io/eladlevi/finance-api:main
+  ghcr.io/JakePeralta7/finance-api:main
 ```
