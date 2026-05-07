@@ -20,6 +20,8 @@ from fastapi import HTTPException
 from app.models.responses import (
     CompanyInfo,
     Fundamentals,
+    HistoryResponse,
+    OHLCVBar,
     PriceInfo,
     SymbolResponse,
 )
@@ -29,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 _QUOTE_URL = "https://query1.finance.yahoo.com/v7/finance/quote"
 _SUMMARY_URL = "https://query2.finance.yahoo.com/v10/finance/quoteSummary/{symbol}"
+_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
 
 _SUMMARY_MODULES = "summaryDetail,assetProfile,defaultKeyStatistics,quoteType,financialData"
 
@@ -73,6 +76,85 @@ async def get_symbol_data(symbol: str) -> SymbolResponse:
         price=price,
         company=company,
         fundamentals=fundamentals,
+    )
+
+
+async def get_symbol_history(symbol: str, period: str, interval: str) -> HistoryResponse:
+    """
+    Fetch historical OHLCV bars for *symbol* from Yahoo Finance.
+
+    Raises
+    ------
+    HTTPException 404  – symbol not found / no data for the requested range.
+    HTTPException 503  – upstream Yahoo Finance API unavailable.
+    """
+    crumb = await yahoo_session.crumb()
+
+    try:
+        response = await yahoo_session.get(
+            _CHART_URL.format(symbol=symbol),
+            params={"range": period, "interval": interval, "crumb": crumb},
+            timeout=15,
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Unexpected error fetching history for %s", symbol)
+        raise HTTPException(status_code=503, detail="Upstream data provider unavailable.") from exc
+
+    _raise_for_upstream_error(response, symbol)
+
+    body: dict = response.json()
+    chart = body.get("chart") or {}
+    error = chart.get("error")
+    if error:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Yahoo Finance returned an error: {error.get('description', error)}",
+        )
+
+    results: list = chart.get("result") or []
+    if not results:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No historical data found for '{symbol}' with period='{period}' interval='{interval}'.",
+        )
+
+    result = results[0]
+    timestamps: list = result.get("timestamp") or []
+    indicators: dict = result.get("indicators") or {}
+    quote: dict = (indicators.get("quote") or [{}])[0]
+
+    opens: list = quote.get("open") or []
+    highs: list = quote.get("high") or []
+    lows: list = quote.get("low") or []
+    closes: list = quote.get("close") or []
+    volumes: list = quote.get("volume") or []
+
+    _INTRADAY_INTERVALS = {"1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h"}
+    use_datetime = interval in _INTRADAY_INTERVALS
+
+    bars: list[OHLCVBar] = []
+    for i, ts in enumerate(timestamps):
+        dt = datetime.fromtimestamp(ts, tz=timezone.utc)
+        date_str = dt.isoformat() if use_datetime else dt.date().isoformat()
+        bars.append(
+            OHLCVBar(
+                date=date_str,
+                open=opens[i] if i < len(opens) else None,
+                high=highs[i] if i < len(highs) else None,
+                low=lows[i] if i < len(lows) else None,
+                close=closes[i] if i < len(closes) else None,
+                volume=volumes[i] if i < len(volumes) else None,
+            )
+        )
+
+    return HistoryResponse(
+        symbol=symbol,
+        period=period,
+        interval=interval,
+        as_of=datetime.now(timezone.utc),
+        data=bars,
     )
 
 

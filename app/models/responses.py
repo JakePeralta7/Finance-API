@@ -70,5 +70,22 @@ class SymbolResponse(BaseModel):
     fundamentals: Fundamentals
 
 
+class OHLCVBar(BaseModel):
+    date: str = Field(..., description="Date or datetime of the bar (ISO 8601). Date only for daily+ intervals; full UTC datetime for intraday.")
+    open: Optional[float] = Field(None, description="Opening price")
+    high: Optional[float] = Field(None, description="High price")
+    low: Optional[float] = Field(None, description="Low price")
+    close: Optional[float] = Field(None, description="Closing price")
+    volume: Optional[int] = Field(None, description="Volume")
+
+
+class HistoryResponse(BaseModel):
+    symbol: str = Field(..., description="Ticker symbol (uppercased)")
+    period: str = Field(..., description="Requested data range (e.g. 1mo, 1y)")
+    interval: str = Field(..., description="Bar interval (e.g. 1d, 1wk)")
+    as_of: datetime = Field(..., description="UTC timestamp of the response")
+    data: list[OHLCVBar] = Field(..., description="Chronological list of OHLCV bars")
+
+
 class ErrorResponse(BaseModel):
     detail: str
