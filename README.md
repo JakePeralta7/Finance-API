@@ -30,7 +30,9 @@ Swagger UI is available at **http://localhost:8000/docs** once the container is 
 
 ### `GET /stock/{symbol}`
 
-Returns current price quote, company profile, and key fundamental ratios.
+Returns the current price quote, company profile, and key fundamental ratios for a ticker symbol.
+
+Supported symbols: equities (`AAPL`), indices (`^GSPC`), forex (`EURUSD=X`), ETFs (`SPY`).
 
 **Example**
 
@@ -61,7 +63,7 @@ curl http://localhost:8000/stock/AAPL
     "ask": 213.50,
     "week_52_high": 237.23,
     "week_52_low": 164.08,
-    "market_state": "REGULAR",
+    "market_state": "REGULAR",       // REGULAR | PRE | POST | CLOSED
     "exchange": "NMS",
     "exchange_delay_minutes": 0
   },
@@ -91,9 +93,50 @@ curl http://localhost:8000/stock/AAPL
 }
 ```
 
+---
+
+### `GET /stock/{symbol}/history`
+
+Returns historical OHLCV (open, high, low, close, volume) bars for a ticker symbol.
+
+| Query param | Default | Allowed values |
+|---|---|---|
+| `period` | `1mo` | `1d` `5d` `1mo` `3mo` `6mo` `1y` `2y` `5y` `10y` `ytd` `max` |
+| `interval` | `1d` | `1m` `2m` `5m` `15m` `30m` `60m` `90m` `1h` `1d` `5d` `1wk` `1mo` `3mo` |
+
+Intraday intervals return full UTC ISO 8601 timestamps; daily and longer intervals return date-only strings.
+
+**Example**
+
+```bash
+# Last month of daily bars
+curl "http://localhost:8000/stock/AAPL/history?period=1mo&interval=1d"
+
+# Today's 5-minute bars
+curl "http://localhost:8000/stock/AAPL/history?period=1d&interval=5m"
+```
+
+**Response schema**
+
+```jsonc
+{
+  "symbol": "AAPL",
+  "period": "1mo",
+  "interval": "1d",
+  "as_of": "2026-05-07T14:00:00Z",
+  "data": [
+    { "date": "2026-04-07", "open": 250.1, "high": 255.3, "low": 249.0, "close": 253.5, "volume": 61200000 },
+    { "date": "2026-04-08", "open": 254.0, "high": 258.9, "low": 252.1, "close": 257.4, "volume": 48900000 }
+    // …
+  ]
+}
+```
+
+---
+
 ### `GET /health`
 
-Liveness probe — returns `{"status": "ok"}` with HTTP 200.
+Liveness probe — returns `{"status": "ok"}` with HTTP 200.  Used by the Docker `HEALTHCHECK` and Kubernetes readiness probes.
 
 ---
 
@@ -122,12 +165,28 @@ All configuration is done through environment variables:
 
 | Variable | Default | Description |
 |---|---|---|
-| `LOG_LEVEL` | `INFO` | Python logging level |
-| `CORS_ORIGINS` | `*` | Comma-separated allowed origins, or `*` for all |
+| `LOG_LEVEL` | `INFO` | Python logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
+| `CORS_ORIGINS` | `*` | Comma-separated list of allowed origins, or `*` for all |
 
 ```bash
 docker run -p 8000:8000 \
   -e LOG_LEVEL=DEBUG \
   -e CORS_ORIGINS="https://myapp.example.com" \
-  ghcr.io/JakePeralta7/finance-api:main
+  ghcr.io/JakePeralta7/finance-api:latest
+```
+
+---
+
+## Project Structure
+
+```
+app/
+├── main.py                  # FastAPI app, middleware, lifecycle hooks
+├── routers/
+│   └── stock.py             # Route definitions and input validation
+├── models/
+│   └── responses.py         # Pydantic response models
+└── services/
+    ├── yahoo_client.py      # Yahoo Finance fetch + normalisation logic
+    └── yahoo_session.py     # Persistent curl_cffi session with auto re-auth
 ```
