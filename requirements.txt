@@ -1,4 +1,4 @@
-fastapi==0.143.0
+fastapi==0.156.4
 uvicorn[standard]==0.54.0
 curl-cffi==0.16.3
 pydantic==2.14.1
